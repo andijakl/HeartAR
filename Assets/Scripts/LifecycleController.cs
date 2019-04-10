@@ -15,6 +15,14 @@ public class LifecycleController : MonoBehaviour
     /// </summary>
     private bool m_IsQuitting;
 
+    void Start()
+    {
+#if DEVELOPMENT_BUILD
+        Debug.logger.logEnabled = true;
+#else
+        Debug.unityLogger.logEnabled = false;
+#endif
+    }
 
     // Update is called once per frame
     void Update()

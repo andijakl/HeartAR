@@ -97,6 +97,10 @@ public class MarkerAnchorController : MonoBehaviour, IArObjectController
                 InstantiatedPrefabs[image.DatabaseIndex] = null;
                 Debug.Log("Destroyed marker prefab instance, idx: " + image.DatabaseIndex);
             }
+            else if (image.TrackingState == TrackingState.Paused)
+            {
+                Debug.Log("Marker tracking paused, idx: " + image.DatabaseIndex);
+            }
 
         }
     }

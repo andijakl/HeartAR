@@ -20,12 +20,12 @@ public class TrackingCheck : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        foreach (var arObjectController in m_ArObjectControllers)
-        {
-            Debug.Log("Instantiated: " + arObjectController.ArePrefabsInstantiated());
-        }
+        //foreach (var arObjectController in m_ArObjectControllers)
+        //{
+        //    Debug.Log("Instantiated: " + arObjectController.ArePrefabsInstantiated());
+        //}
         var showOverlay = !m_ArObjectControllers.Any(arObjectController => arObjectController.ArePrefabsInstantiated());
-        Debug.Log("Show overlay: " + showOverlay);
+        //Debug.Log("Show overlay: " + showOverlay);
         FitToScanOverlay.SetActive(showOverlay);
     }
     

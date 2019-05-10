@@ -16,6 +16,13 @@ public class MarkerAnchorController : MonoBehaviour, IArObjectController
     public ArPrefab[] ArPrefabs;
 
     /// <summary>
+    /// If a marker has not received an update for these seconds, remove the instantiated prefab.
+    /// The ARCore SDK otherwise very seldomly reports paused or stopped tracking, causing
+    /// objects to stick around for a long time even if the marker has already been removed.
+    /// </summary>
+    public readonly float DeleteNotUpdatedMarkersAfterSeconds = 5.0f;
+
+    /// <summary>
     /// Only allows 1 gameobject instance per augmented images database index.
     /// This array contains the instantiated gameobjects.
     /// Array ID corresponds to database index.
@@ -23,6 +30,12 @@ public class MarkerAnchorController : MonoBehaviour, IArObjectController
     /// after marker has been detected (and is still being tracked).
     /// </summary>
     private GameObject[] InstantiatedPrefabs;
+
+    /// <summary>
+    /// Indicates when each prefab was seen the last time so that it can be removed
+    /// from the active objects after tracking has paused for too long.
+    /// </summary>
+    private float[] LastSeenPrefabs;
     
     /// <summary>
     /// List filled by ARCore API containing all augmented images that have been updated.
@@ -39,6 +52,7 @@ public class MarkerAnchorController : MonoBehaviour, IArObjectController
     {
         // Only one instance per marker
         InstantiatedPrefabs = new GameObject[ArPrefabs.Length];
+        LastSeenPrefabs = new float[ArPrefabs.Length];
     }
 
     // Update is called once per frame
@@ -67,41 +81,56 @@ public class MarkerAnchorController : MonoBehaviour, IArObjectController
             // where we don't have a prefab for.
             if (InstantiatedPrefabs.Length <= image.DatabaseIndex) continue;
             
-            if (image.TrackingState == TrackingState.Tracking
-                && InstantiatedPrefabs[image.DatabaseIndex] == null)
+            if (image.TrackingState == TrackingState.Tracking)
             {
-                // Prefab has not yet been instantiated in the scene
-                // -> Create a new anchor
-                var anchor = image.CreateAnchor(image.CenterPose);
-                // Instantiate the prefab corresponding to the augmented image.
-                var newArPrefab = Instantiate(ArPrefabs[image.DatabaseIndex], anchor.transform);
-                // Give our prefab instance the reference to its trackable so that it can adjust itself if needed.
-                newArPrefab.AttachedToTrackable = image;
-                // Make object child of the anchor
-                // Not done so in the AugmentedImages example, but in all others
-                // -> seems logical to do the same here, as planes are also Trackables,
-                // so they shouldn't be different.
-                newArPrefab.transform.parent = anchor.transform;
-                // Store the prefab instance at the position corresponding to the database index
-                InstantiatedPrefabs[image.DatabaseIndex] = newArPrefab.gameObject;
-                Debug.Log("Created new marker prefab instance, idx: " + image.DatabaseIndex);
+                if (InstantiatedPrefabs[image.DatabaseIndex] == null)
+                {
+                    // Prefab has not yet been instantiated in the scene
+                    // -> Create a new anchor
+                    var anchor = image.CreateAnchor(image.CenterPose);
+                    // Instantiate the prefab corresponding to the augmented image.
+                    var newArPrefab = Instantiate(ArPrefabs[image.DatabaseIndex], anchor.transform);
+                    // Give our prefab instance the reference to its trackable so that it can adjust itself if needed.
+                    newArPrefab.AttachedToTrackable = image;
+                    // Make object child of the anchor
+                    // Not done so in the AugmentedImages example, but in all others
+                    // -> seems logical to do the same here, as planes are also Trackables,
+                    // so they shouldn't be different.
+                    newArPrefab.transform.parent = anchor.transform;
+                    // Store the prefab instance at the position corresponding to the database index
+                    InstantiatedPrefabs[image.DatabaseIndex] = newArPrefab.gameObject;
+                    LastSeenPrefabs[image.DatabaseIndex] = Time.time;
+                    Debug.Log("MarkerAnchorController: Created new marker prefab instance, idx: " + image.DatabaseIndex);
+                } else
+                {
+                    // Activly tracking this prefab and it was found again
+                    // -> update last seen time
+                    LastSeenPrefabs[image.DatabaseIndex] = Time.time;
+                    //Debug.Log("MarkerAnchorController: Updated marker, idx: " + image.DatabaseIndex);
+                }
             }
             else if (image.TrackingState == TrackingState.Stopped
                      && InstantiatedPrefabs[image.DatabaseIndex] != null)
             {
-                // Stopped tracking a previously found marker.
-                // Delete the anchor that was created in the Unity scene (its child is our own prefab instance)
-                Destroy(InstantiatedPrefabs[image.DatabaseIndex].transform.parent.gameObject);
-                // Now also delete the reference from our array so that we can create a new 
-                // instance if the marker is discovered again
-                InstantiatedPrefabs[image.DatabaseIndex] = null;
-                Debug.Log("Destroyed marker prefab instance, idx: " + image.DatabaseIndex);
+                Debug.Log("MarkerAnchorController: Tracking stopped, idx: " + image.DatabaseIndex);
+                DestroyPrefab(image.DatabaseIndex);
             }
             else if (image.TrackingState == TrackingState.Paused)
             {
-                Debug.Log("Marker tracking paused, idx: " + image.DatabaseIndex);
+                Debug.Log("MarkerAnchorController: Marker tracking paused, idx: " + image.DatabaseIndex);
             }
+        }
 
+        // Check if a marker has not been seen for a long time, no matter
+        // if paused (which isn't reliably returned currently) or still activly tracking.
+        for (var checkPrefabTime = 0; checkPrefabTime < LastSeenPrefabs.Count(); checkPrefabTime++)
+        {
+            if (InstantiatedPrefabs[checkPrefabTime] != null 
+                && Time.time - LastSeenPrefabs[checkPrefabTime] > DeleteNotUpdatedMarkersAfterSeconds)
+            {
+                Debug.Log("MarkerAnchorController: Marker has not been seen for a long time - destroying instantiated prefab...");
+                DestroyPrefab(checkPrefabTime);
+            }
         }
     }
 
@@ -109,5 +138,17 @@ public class MarkerAnchorController : MonoBehaviour, IArObjectController
     public bool ArePrefabsInstantiated()
     {
         return InstantiatedPrefabs.Any(instantiatedPrefab => instantiatedPrefab != null);
+    }
+
+    private void DestroyPrefab(int databaseIndex)
+    {
+        // Stopped tracking a previously found marker.
+        // Delete the anchor that was created in the Unity scene (its child is our own prefab instance)
+        Destroy(InstantiatedPrefabs[databaseIndex].transform.parent.gameObject);
+        // Now also delete the reference from our array so that we can create a new 
+        // instance if the marker is discovered again
+        InstantiatedPrefabs[databaseIndex] = null;
+        LastSeenPrefabs[databaseIndex] = 0.0f;
+        Debug.Log("MarkerAnchorController: Destroyed marker prefab instance, idx: " + databaseIndex);
     }
 }

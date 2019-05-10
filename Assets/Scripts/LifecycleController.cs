@@ -18,7 +18,7 @@ public class LifecycleController : MonoBehaviour
     void Start()
     {
 #if DEVELOPMENT_BUILD
-        Debug.logger.logEnabled = true;
+        Debug.unityLogger.logEnabled = true;
 #else
         Debug.unityLogger.logEnabled = false;
 #endif

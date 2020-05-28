@@ -35,7 +35,7 @@ This project extends the samples that ship with the [Google ARCore for Unity SDK
 
 * **TrackingCheck:** Regularly checks instantiated prefabs whether the associated ARCore trackable reports that tracking has been lost. Automatically checks all controller scripts that implement the `IArObjectController` interface. This simple interface allows querying the instantiated prefabs.
 
-* **Light Estimation:** Is enabled in this scene and currently used by the nerve cell prefab.
+* **Light Estimation:** Is enabled in this scene.
 
 * **Screen Auto-Rotation:** Disabled, as this gives a better user experience on Android without screen flickering while turning the screen. Auto-rotation would mainly be needed for static textual content that is not anchored to a plane or augmented image or otherwise placed in screen-space instead of world-space.
 

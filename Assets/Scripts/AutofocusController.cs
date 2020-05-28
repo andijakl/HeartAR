@@ -25,7 +25,7 @@ public class AutofocusController : MonoBehaviour
         var config = ARSessionManager.SessionConfig;
         if (config != null)
         {
-            config.CameraFocusMode = config.CameraFocusMode == CameraFocusMode.Fixed ? CameraFocusMode.Auto : CameraFocusMode.Fixed;
+            config.CameraFocusMode = config.CameraFocusMode == CameraFocusMode.FixedFocus ? CameraFocusMode.AutoFocus : CameraFocusMode.FixedFocus;
             Debug.Log("Autofocus: " + config.CameraFocusMode);
         }
     }

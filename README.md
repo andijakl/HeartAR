@@ -21,7 +21,7 @@ This project extends the samples that ship with the [Google ARCore for Unity SDK
 
 * **Lifecycle:** Takes care of permissions, screen time out and quitting the app.\
 *See script:* `LifecycleController.cs`\
-*Difference to Original Google example:* Completely integrated into the HelloAR example from the SDK. But these tasks are good to have in an extra script, instead of being integrated into a controller that handles user interaction.
+*Difference to Original Google example:* Taken from the SDK's HelloAR example. But these tasks are good to have in an extra script, instead of being integrated into a controller that handles user interaction.
 
 * **Autofocus Controller:** Turn autofocus on / off while the app is running through a tap with two fingers on the screen. Google currently still recommends using the default setting - which is autofocus off. With this script, you can explore the differences. If the phone camera doesn't support autofocus, it will ignore this setting.\
 *See script:* `AutofocusController.cs`\
@@ -29,7 +29,7 @@ This project extends the samples that ship with the [Google ARCore for Unity SDK
 
 ### General architecture notes
 
-* **Augmented Images:** The two pictures to use as markers are in the /Assets/Images/ folder. For the best performance, print them on paper. For quick testing, it also works to show the markers on your computer screen.
+* **Augmented Images:** The two pictures to use as markers are in the `/Assets/Images/` folder. For the best performance, print them on paper. For quick testing, it also works to show the markers on your computer screen.
 
 * **ArPrefab:** Should be part of every AR prefab instantiated in the scene. Stores a reference to the trackable the prefab instance is connected to as a property. Allows for quickly checking which trackables have been given up by the ARCore SDK, to properly clean up the game objects in the scene.
 
@@ -39,11 +39,11 @@ This project extends the samples that ship with the [Google ARCore for Unity SDK
 
 * **Screen Auto-Rotation:** Disabled, as this gives a better user experience on Android without screen flickering while turning the screen. Auto-rotation would mainly be needed for static textual content that is not anchored to a plane or augmented image or otherwise placed in screen-space instead of world-space.
 
-* **GLB / GLTF Import:** The 3D models of the human heart and nerve cells were imported from GLB files. This format is not yet natively supported in Unity. This app therefore includes the [SketchFab unitypackage](https://github.com/sketchfab/UnityGLTF/releases/tag/1.0.3), which imported the models.
+* **GLB / GLTF Import:** The 3D models of the human heart and nerve cells were imported from GLB files. This format is not yet natively supported in Unity. They were imported through the [SketchFab unitypackage](https://github.com/sketchfab/UnityGLTF/releases/tag/1.0.3).
 
 ## Credits
 
-The 3D models used in this scene have been created by Microsoft: [Beating heart](https://www.remix3d.com/details/059f2766c027458787256ebb47a4094e?section=other-models), [Human heart](https://www.remix3d.com/details/G009SW90XX63?section=other-models), [Nerve cell](https://www.remix3d.com/details/4792d1b6b6954e7882c429e8b4dcaa8c?section=other-models).
+The 3D models used in this scene have been created by Microsoft and were downloaded from *Remix3D*. Update: the *Remix3D* platform is no longer available, you can still find the models through the 3D model section of Office 365. To avoid dead links, I've removed the links to the original source from the readme.
 
 Released under the MIT license - see the LICENSE file for details.
 

@@ -24,6 +24,16 @@ public class LifecycleController : MonoBehaviour
 #endif
     }
 
+    /// <summary>
+    /// The Unity Awake() method.
+    /// </summary>
+    public void Awake()
+    {
+        // Enable ARCore to target 60fps camera capture frame rate on supported devices.
+        // Note, Application.targetFrameRate is ignored when QualitySettings.vSyncCount != 0.
+        Application.targetFrameRate = 60;
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -41,8 +51,7 @@ public class LifecycleController : MonoBehaviour
         // Only allow the screen to sleep when not tracking.
         if (Session.Status != SessionStatus.Tracking)
         {
-            const int lostTrackingSleepTimeout = 15;
-            Screen.sleepTimeout = lostTrackingSleepTimeout;
+            Screen.sleepTimeout = SleepTimeout.SystemSetting;
         }
         else
         {
@@ -54,12 +63,20 @@ public class LifecycleController : MonoBehaviour
             return;
         }
 
-        // Quit if ARCore was unable to connect and give Unity some time for the toast to appear.
+        // Quit if ARCore was unable to connect and give Unity some time for the toast to
+        // appear.
         if (Session.Status == SessionStatus.ErrorPermissionNotGranted)
         {
             ShowAndroidToastMessage("Camera permission is needed to run this application.");
             m_IsQuitting = true;
-            Invoke("DoQuit", 0.5f);
+            Invoke("_DoQuit", 0.5f);
+        }
+        else if (Session.Status.IsError())
+        {
+            ShowAndroidToastMessage(
+                "ARCore encountered a problem connecting.  Please start the app again.");
+            m_IsQuitting = true;
+            Invoke("_DoQuit", 0.5f);
         }
 
     }

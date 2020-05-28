@@ -4,6 +4,11 @@ using GoogleARCore;
 using GoogleARCore.Examples.ObjectManipulation;
 using UnityEngine;
 
+#if UNITY_EDITOR
+// Set up touch input propagation while using Instant Preview in the editor.
+using Input = GoogleARCore.InstantPreviewInput;
+#endif
+
 public class ManipulatorController : Manipulator, IArObjectController
 {
     /// <summary>
@@ -113,9 +118,11 @@ public class ManipulatorController : Manipulator, IArObjectController
             // Check the trackable attached to each instance to see if its tracking state stopped
             if (m_ArPrefabInstances[i]?.GetComponent<ArPrefab>()?.AttachedToTrackable.TrackingState == TrackingState.Stopped)
             {
-                // Destroy gameobject and remove its anchor from the Unity scene
-                // See: https://stackoverflow.com/questions/51466946/destroy-anchors-in-unity-arcore
-                Destroy(m_ArPrefabInstances[i].transform.parent.gameObject);
+                Debug.Log("Deleting parent (should be anchor): " + m_ArPrefabInstances[i].transform.parent.parent.gameObject.name);
+                // Destroy gameobject and remove its anchor from the Unity scene
+                // Attention - for the manipulator, the anchor is the parent of the parent of our game object!
+                // Hierarchy is: Anchor -> Manipulator -> Our GameObject
+                Destroy(m_ArPrefabInstances[i].transform.parent.parent.gameObject);
 
                 // Also remove the item from our internal list
                 m_ArPrefabInstances.RemoveAt(i);

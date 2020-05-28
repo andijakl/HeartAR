@@ -1,13 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using GoogleARCore;
 using UnityEngine;
 using UnityEngine.EventSystems;
+
 #if UNITY_EDITOR
 // Set up touch input propagation while using Instant Preview in the editor.
 using Input = GoogleARCore.InstantPreviewInput;
 #endif
+
 
 public class PlaneAnchorController : MonoBehaviour, IArObjectController
 {
@@ -35,7 +36,8 @@ public class PlaneAnchorController : MonoBehaviour, IArObjectController
     {
         // If the player has not touched the screen, we are done with this update.
         Touch touch;
-        if (Input.touchCount != 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began) return;
+        if (Input.touchCount < 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began) return;
+
         // Should not handle input if the player is pointing on UI.
         if (EventSystem.current.IsPointerOverGameObject(touch.fingerId))
         {
